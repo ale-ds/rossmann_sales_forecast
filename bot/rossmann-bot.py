@@ -16,6 +16,21 @@ TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
 if not TOKEN:
     raise ValueError("A variável de ambiente TELEGRAM_BOT_TOKEN não foi definida.")
 
+# Info about the Bot
+# 'https://api.telegram.org/bot6869086822:AAEnR8Rl9yIiT-MUVwCkOstK_KpkEvck9fo/getMe'
+
+# get updates
+# 'https://api.telegram.org/bot6869086822:AAEnR8Rl9yIiT-MUVwCkOstK_KpkEvck9fo/getUpdates'
+
+# send message
+# 'https://api.telegram.org/bot6869086822:AAEnR8Rl9yIiT-MUVwCkOstK_KpkEvck9fo/sendMessage?chat_id=1090663968&text=Hi Ale, I am doing good, tks!'
+
+# set webhook
+# 'https://api.telegram.org/bot6869086822:AAEnR8Rl9yIiT-MUVwCkOstK_KpkEvck9fo/setWebhook?url=https://4ee82aed6bac71.lhr.life'
+# 'https://api.telegram.org/bot6869086822:AAEnR8Rl9yIiT-MUVwCkOstK_KpkEvck9fo/setWebhook?url=https://rossmann-telegram-bot-a4ma.onrender.com/'
+# 'https://api.telegram.org/bot6869086822:AAEnR8Rl9yIiT-MUVwCkOstK_KpkEvck9fo/setWebhook?url=https://4ee82aed6bac71.lhr.life'
+
+
 def send_message(chat_id, text):
     url = 'https://api.telegram.org/bot{}/'.format(TOKEN) 
     url = url + 'sendMessage?chat_id={}'.format(chat_id)
