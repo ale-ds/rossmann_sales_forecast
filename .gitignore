@@ -22,7 +22,7 @@ __pycache__/
 data/cleansed/*
 data/transformed/*
 model/pre-processing/featureSelectionModel/*
-model/modeling/*
+model/modeling/use_in_notebook/*
 # Para manter as pastas vazias no git, adicione um arquivo .gitkeep dentro delas
 # Ex: data/raw/.gitkeep
 
