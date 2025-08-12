@@ -1,0 +1,51 @@
+# Ambientes Virtuais (essencial para não versionar as bibliotecas instaladas)
+venv/
+.venv/
+env/
+.env/
+
+# Arquivos de Cache e Compilados do Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Arquivos de Notebooks (evita versionar checkpoints)
+.ipynb_checkpoints/
+
+# Arquivos de Ambiente e Configuração (NÃO versionar segredos e tokens!)
+.env
+.env.*
+!/.env.example
+
+# Dados e Modelos (geralmente grandes e não devem ser versionados)
+# data/raw/*
+data/cleansed/*
+data/transformed/*
+model/pre-processing/featureSelectionModel/*
+model/modeling/*
+# Para manter as pastas vazias no git, adicione um arquivo .gitkeep dentro delas
+# Ex: data/raw/.gitkeep
+
+# Arquivos de Sistema Operacional
+.DS_Store
+Thumbs.db
+
+# Arquivos de IDEs e Editores
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Arquivos de Teste e Cobertura
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+
+# Logs
+logs/
+*.log
