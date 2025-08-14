@@ -23,11 +23,6 @@ def log_memory_usage(context=""):
     mem_info = process.memory_info().rss / (1024 * 1024)  # in MB
     logging.info(f"[MEMORY] {context} - Memory usage: {mem_info:.2f} MB")
 
-# Base directory for .pkl files
-BASE_PATH = "../model"
-PREPROCESSING_PATH = os.path.join(BASE_PATH, "pre-processing")
-MODELING_PATH = os.path.join(BASE_PATH, "modeling")
-
 def load_pickle(file_name):
     """
     Loads a .pkl file from the BASE_PATH directory.
@@ -42,8 +37,7 @@ def load_pickle(file_name):
     object
         The object loaded from the .pkl file.
     """
-    path = os.path.join(PREPROCESSING_PATH, file_name)
-    with open(path, "rb") as f:
+    with open(f"../model/pre-processing/{file_name}", "rb") as f:
         return pickle.load(f)
 
 log_memory_usage("Handler start")
@@ -54,20 +48,20 @@ logging.info("Loading model and preprocessing objects...")
 # Load XGBoost model from its native binary format for efficiency and stability
 model = xgb.XGBRegressor()
 # The path should be relative to BASE_PATH, without a leading slash.
-model.load_model(os.path.join(MODELING_PATH, "model_xgb_final.ubj"))
+model.load_model("../model/modeling/model_xgb_final.ubj")
 
 scalers = {
-    "competition_distance_scaler": load_pickle("pre-processing/robust_scaler_competition_distance.pkl"),
-    "competition_time_month_scaler": load_pickle("pre-processing/robust_scaler_competition_time_month.pkl"),
-    "promo_time_week_scaler": load_pickle("pre-processing/minmax_scaler_promo_time_week.pkl"),
-    "year_scaler": load_pickle("pre-processing/minmax_scaler_year.pkl")
+    "competition_distance_scaler": load_pickle("robust_scaler_competition_distance.pkl"),
+    "competition_time_month_scaler": load_pickle("robust_scaler_competition_time_month.pkl"),
+    "promo_time_week_scaler": load_pickle("minmax_scaler_promo_time_week.pkl"),
+    "year_scaler": load_pickle("minmax_scaler_year.pkl")
 }
 encoders = {
-    "store_type_encoder": load_pickle("pre-processing/label_encoder_store_type.pkl"),
+    "store_type_encoder": load_pickle("label_encoder_store_type.pkl"),
     "assortment_encoder": {"basic": 1, "extra": 2, "extended": 3},  # Assortment already defined
     "state_holiday_encoder": {"a": "public", "b": "easter", "c": "christmas", "0": "none"}
 }
-features_selected = load_pickle("pre-processing/list_features_selected.pkl")
+features_selected = load_pickle("list_features_selected.pkl")
 
 log_memory_usage("After loading objects")
 
