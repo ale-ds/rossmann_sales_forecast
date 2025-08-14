@@ -25,6 +25,7 @@ def log_memory_usage(context=""):
 
 # Base directory for .pkl files
 BASE_PATH = "../model"
+PREPROCESSING_PATH = os.path.join(BASE_PATH, "pre-processing")
 MODELING_PATH = os.path.join(BASE_PATH, "modeling")
 
 def load_pickle(file_name):
@@ -41,7 +42,7 @@ def load_pickle(file_name):
     object
         The object loaded from the .pkl file.
     """
-    path = os.path.join(BASE_PATH, file_name)
+    path = os.path.join(PREPROCESSING_PATH, file_name)
     with open(path, "rb") as f:
         return pickle.load(f)
 
