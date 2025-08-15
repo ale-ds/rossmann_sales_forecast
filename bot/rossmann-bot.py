@@ -1,124 +1,158 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
 import os
 import json
+import logging
 import requests
 import pandas as pd
 from flask import Flask, request, Response
 from dotenv import load_dotenv
+from typing import Union, Tuple, Optional
 
-# Carrega as variáveis de ambiente do arquivo .env
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
+# Load environment variables from .env file
 load_dotenv()
 
-# constants
+# Constants
 TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
+API_URL = os.environ.get('API_URL', 'https://rossmann-model-bgly.onrender.com/rossmann/predict')
+
 if not TOKEN:
-    raise ValueError("A variável de ambiente TELEGRAM_BOT_TOKEN não foi definida.")
+    raise ValueError("The environment variable TELEGRAM_BOT_TOKEN is not set.")
 
-# Info about the Bot
-# 'https://api.telegram.org/bot6869086822:AAEnR8Rl9yIiT-MUVwCkOstK_KpkEvck9fo/getMe'
+def send_message(chat_id: int, text: str) -> None:
+    """Sends a message to a specific Telegram chat."""
+    url = f'https://api.telegram.org/bot{TOKEN}/sendMessage'
+    payload = {'chat_id': chat_id, 'text': text}
+    try:
+        response = requests.post(url, json=payload)
+        response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
+        logging.info(f"Message sent to chat_id {chat_id} with status code: {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Failed to send message to chat_id {chat_id}: {e}")
 
-# get updates
-# 'https://api.telegram.org/bot6869086822:AAEnR8Rl9yIiT-MUVwCkOstK_KpkEvck9fo/getUpdates'
+# Load and merge datasets once at startup to avoid repeated I/O
+try:
+    df_test_raw = pd.read_csv('test.csv')
+    df_store_raw = pd.read_csv('store.csv')
+    # Merge test dataset + store
+    df_merged = pd.merge(df_test_raw, df_store_raw, how='left', on='Store')
+    logging.info("Test and store datasets loaded and merged successfully.")
+except FileNotFoundError as e:
+    logging.error(f"Error loading data files: {e}. Make sure 'test.csv' and 'store.csv' are in the correct directory.")
+    df_merged = pd.DataFrame() # Create an empty dataframe to avoid crashing on startup
 
-# send message
-# 'https://api.telegram.org/bot6869086822:AAEnR8Rl9yIiT-MUVwCkOstK_KpkEvck9fo/sendMessage?chat_id=1090663968&text=Hi Ale, I am doing good, tks!'
+def load_dataset(store_id: int) -> str:
+    """Filters the dataset for a specific store and prepares it for prediction."""
+    if df_merged.empty:
+        logging.error("The merged dataframe is empty. Cannot process request.")
+        return 'error'
+        
+    # Choose store for prediction
+    df_test = df_merged[df_merged['Store'] == store_id].copy()
 
-# set webhook
-# 'https://api.telegram.org/bot6869086822:AAEnR8Rl9yIiT-MUVwCkOstK_KpkEvck9fo/setWebhook?url=https://4ee82aed6bac71.lhr.life'
-# 'https://api.telegram.org/bot6869086822:AAEnR8Rl9yIiT-MUVwCkOstK_KpkEvck9fo/setWebhook?url=https://rossmann-telegram-bot-a4ma.onrender.com/'
-# 'https://api.telegram.org/bot6869086822:AAEnR8Rl9yIiT-MUVwCkOstK_KpkEvck9fo/setWebhook?url=https://4ee82aed6bac71.lhr.life'
+    if df_test.empty:
+        logging.warning(f"No data found for store_id: {store_id}")
+        return 'error'
 
-
-def send_message(chat_id, text):
-    url = 'https://api.telegram.org/bot{}/'.format(TOKEN) 
-    url = url + 'sendMessage?chat_id={}'.format(chat_id)
-
-    r = requests.post(url, json={'text': text})
-    print('Status code: {}'.format(r.status_code))
-    return None
-
-# Carrega os datasets uma vez na inicialização para evitar I/O repetido
-df_test_raw = pd.read_csv('test.csv')
-df_store_raw = pd.read_csv('store.csv')
-
-def load_dataset(store_id):
-    # merge test dataset + store
-    df_test = pd.merge(df_test_raw, df_store_raw, how='left', on='Store')
+    # Remove closed days and rows with null 'Open' status
+    df_test = df_test.loc[(df_test['Open'] == 1) & (~df_test['Open'].isnull())]
     
-    # choose store for prediction
-    df_test = df_test[df_test['Store'] == store_id]
+    if df_test.empty:
+        logging.warning(f"No open days found for store_id: {store_id} in the test set.")
+        return 'error'
 
-    if not df_test.empty:
-        # remove closed days
-        df_test = df_test.loc[df_test.Open == 1]
-        df_test = df_test.loc[~df_test.Open.isnull()]
-        df_test = df_test.drop('Id', axis=1)
+    df_test = df_test.drop('Id', axis=1)
 
-        # convert Dataframe to json
-        data = json.dumps( df_test.to_dict(orient = 'records') )
-    else:
-        data = 'error'
-
+    # Convert DataFrame to JSON
+    data = json.dumps(df_test.to_dict(orient='records'))
     return data
 
-def predict(data):
-    # API Call
-    url = os.environ.get('API_URL', 'https://rossmann-model-bgly.onrender.com/rossmann/predict')
-    header = {'Content-type': 'application/json' }
-    r = requests.post(url, data=data, headers=header)
-    print('Status Code {}'.format(r.status_code))
-    d1 = pd.DataFrame ( r.json(), columns=r.json()[0].keys() )
-    return d1
-
-def parse_message(message):
-    chat_id = message['message']['chat']['id']
-    store_id = message['message']['text']
-    store_id = store_id.replace('/', '')
+def predict(data: str) -> Optional[pd.DataFrame]:
+    """Calls the prediction API and returns the result as a DataFrame."""
+    headers = {'Content-type': 'application/json'}
     try:
-        store_id = int(store_id)
-    except ValueError:
-        store_id = 'error'
+        response = requests.post(API_URL, data=data, headers=headers)
+        response.raise_for_status()
+        logging.info(f"API call successful with status code {response.status_code}")
+        
+        response_json = response.json()
+        if not response_json:
+            logging.warning("Prediction API returned an empty response.")
+            return None
+            
+        return pd.DataFrame(response_json)
+    except requests.exceptions.RequestException as e:
+        logging.error(f"API call failed: {e}")
+        return None
+    except json.JSONDecodeError:
+        logging.error(f"Failed to decode JSON from API response: {response.text}")
+        return None
 
-    return chat_id, store_id
-
+def parse_message(message: dict) -> Tuple[Optional[int], Union[int, str]]:
+    """Parses the chat_id and store_id from the incoming message."""
+    chat_id = None
+    try:
+        chat_id = message['message']['chat']['id']
+        store_id_str = message['message']['text'].replace('/', '')
+        store_id = int(store_id_str)
+        return chat_id, store_id
+    except (KeyError, ValueError):
+        # If message format is unexpected or store_id is not an integer
+        if chat_id is None and 'message' in message and 'chat' in message['message']:
+             chat_id = message['message']['chat'].get('id')
+        return chat_id, 'error'
 
 # API initialize
 app = Flask(__name__)
 
-@app.route('/', methods=['GET', 'POST'] )
+@app.route('/', methods=['GET', 'POST'])
 def index():
-    if request.method == 'POST':
-        message = request.get_json()
-        chat_id, store_id = parse_message(message)
+    if request.method != 'POST':
+        return '<h1>Rossmann Telegram BOT</h1>'
 
-        if store_id != 'error':
-            # loading data
-            data = load_dataset( store_id )
-            
-            if data != 'error':
-                # prediction
-                d1 = predict(data)
-                
-                # calculation
-                d2 = d1[['store', 'prediction']].groupby('store').sum().reset_index()
-                print(d2)
-                # send message
-                msg ='Store Number {} will sell R${:,.2f} in the next 6 weeks'.format(
-                    d2['store'].values[0],
-                    d2['prediction'].values[0] )
-                send_message( chat_id, msg)
-                return Response('Ok', status=200)
-            else:
-                send_message(chat_id, 'Store Not Available')
-                return Response('Ok', status=200)
-        else:
-            send_message(chat_id, 'Store ID is Wrong')
-            return Response('Ok', status=200)
-    else:
-        return '<h1> Rossmann Telegram BOT </h1>'
+    message = request.get_json()
+    if not message:
+        logging.warning("Received an empty POST request.")
+        return Response('Error', status=400)
+
+    chat_id, store_id = parse_message(message)
+
+    if store_id == 'error' or not chat_id:
+        if chat_id:
+            send_message(chat_id, 'Invalid Store ID. Please send a valid store number (e.g., /24).')
+        return Response('Ok', status=200)
+
+    # loading data
+    data = load_dataset(store_id)
+    if data == 'error':
+        send_message(chat_id, f'Store {store_id} is not available for prediction or is closed during the forecast period.')
+        return Response('Ok', status=200)
+
+    # prediction
+    df_prediction = predict(data)
+    if df_prediction is None:
+        send_message(chat_id, 'Sorry, I could not get a prediction at this time. Please try again later.')
+        return Response('Ok', status=200)
+
+    # calculation
+    df_sum = df_prediction[['store', 'prediction']].groupby('store').sum().reset_index()
+    
+    if df_sum.empty:
+        send_message(chat_id, f'No predictions could be calculated for Store {store_id}.')
+        return Response('Ok', status=200)
+
+    # send message
+    store = df_sum['store'].values[0]
+    prediction_value = df_sum['prediction'].values[0]
+    msg = f'Store Number {store} will sell R${prediction_value:,.2f} in the next 6 weeks.'
+    
+    send_message(chat_id, msg)
+    return Response('Ok', status=200)
 
 if __name__ == '__main__':
-    port = os.environ.get('PORT', 5000)
+    port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
