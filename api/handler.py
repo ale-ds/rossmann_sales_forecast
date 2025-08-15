@@ -95,19 +95,23 @@ def rossmann_predict():
     if not test_json:
         return jsonify({"error": "No data received"}), 400
 
-    # Convert input JSON to DataFrame
-    if isinstance(test_json, dict):
-        df_raw = pd.DataFrame([test_json])
-    else:
-        df_raw = pd.DataFrame(test_json)
+    try:
+        # Convert input JSON to DataFrame
+        if isinstance(test_json, dict):
+            df_raw = pd.DataFrame([test_json])
+        else:
+            df_raw = pd.DataFrame(test_json)
 
-    log_memory_usage("Before preprocessing")
-    df_prepared = rossmann.preprocess(df_raw)
-    log_memory_usage("After preprocessing")
-    df_response = rossmann.get_prediction(df_prepared)
-    log_memory_usage("After prediction")
+        log_memory_usage("Before preprocessing")
+        df_prepared = rossmann.preprocess(df_raw)
+        log_memory_usage("After preprocessing")
+        df_response = rossmann.get_prediction(df_prepared)
+        log_memory_usage("After prediction")
 
-    return df_response
+        return df_response
+    except Exception as e:
+        logging.error(f"Error during prediction: {e}", exc_info=True)
+        return jsonify({"error": "An internal error occurred during prediction."}), 500
 
 if __name__ == "__main__":
     app.run("0.0.0.0", port=5000)

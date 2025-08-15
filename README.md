@@ -74,7 +74,7 @@ A API é o núcleo do projeto, responsável por receber os dados, processá-los 
 
 3.  **Instale as dependências:**
     ```bash
-    pip install -r ../requirements.txt
+    pip install -r requirements.txt
     ```
 
 4.  **Inicie o servidor Flask:**
