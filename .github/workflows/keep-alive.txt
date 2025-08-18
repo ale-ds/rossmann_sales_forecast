@@ -1,0 +1,26 @@
+# Nome do Workflow: será exibido na aba "Actions" do seu repositório.
+name: Keep Render Services Alive
+
+on:
+  schedule:
+    # Executa a cada 10 minutos. O Render desativa serviços após 15 minutos de inatividade.
+    # A sintaxe cron é: minuto hora dia(mês) mês dia(semana)
+    - cron: '*/10 * * * *'
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping API Service
+        # O comando 'curl' envia uma requisição HTTP.
+        # O '-sS' faz com que ele opere silenciosamente, mas mostre erros se ocorrerem.
+        # O '|| true' garante que o workflow não falhe se o serviço estiver temporariamente indisponível.
+        run: curl -sS "https://rossmann-sales-forecast-flnh.onrender.com/" || true
+
+      - name: Ping Bot Service
+        run: curl -sS "https://rossmann-telegram-bot-92ce.onrender.com/" || true
+
+      - name: Workflow status
+        run: echo "Ping jobs completed at $(date)"
+
+
