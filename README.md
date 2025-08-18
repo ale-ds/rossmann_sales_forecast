@@ -10,7 +10,67 @@ A solução proposta é um **sistema de previsão de vendas utilizando Machine L
 
 ---
 
-## 2. Tecnologias Utilizadas
+## 2. Arquitetura da Solução
+
+A solução foi desenhada para ser robusta, escalável e de fácil acesso para os usuários finais. O fluxo de dados e interações segue a arquitetura abaixo:
+
+```mermaid
+graph TD
+    A[👤 Usuário] -->|1. Envia ID da loja (ex: /24)| B(💬 Bot do Telegram);
+    B -->|2. Encaminha para Webhook| C{🤖 Serviço do Bot no Render};
+    C -->|3. Busca dados e envia p/ API| D{⚙️ API de Previsão no Render};
+    D -->|4. Pré-processa e executa modelo| E[🧠 Modelo XGBoost];
+    E -->|5. Retorna previsão| D;
+    D -->|6. Retorna JSON da previsão| C;
+    C -->|7. Formata e envia resposta| B;
+    B -->|8. Entrega mensagem final| A;
+
+    style A fill:#D6EAF8,stroke:#333,stroke-width:2px
+    style B fill:#AED6F1,stroke:#333,stroke-width:2px
+    style C fill:#85C1E9,stroke:#333,stroke-width:2px
+    style D fill:#5DADE2,stroke:#333,stroke-width:2px
+    style E fill:#3498DB,stroke:#333,stroke-width:2px
+```
+
+**Passo a Passo do Fluxo:**
+
+1.  **Interação do Usuário:** Um gerente de loja envia uma mensagem com o ID da loja (ex: `/24`) para o bot no Telegram.
+2.  **Webhook:** O Telegram encaminha a mensagem para o serviço do bot hospedado no Render.
+3.  **Orquestração do Bot:** O bot recebe a mensagem, extrai o ID da loja e carrega os dados brutos necessários para a previsão.
+4.  **Chamada à API:** O bot envia esses dados em formato JSON para a API de previsão, também hospedada no Render.
+5.  **Previsão:** A API recebe os dados, aplica todo o pipeline de pré-processamento e utiliza o modelo XGBoost treinado para gerar as previsões de vendas.
+6.  **Retorno da Previsão:** A API retorna as previsões em formato JSON para o bot.
+7.  **Formatação da Resposta:** O bot recebe as previsões, calcula o faturamento total e formata uma mensagem clara e amigável.
+8.  **Entrega ao Usuário:** O bot envia a mensagem final para o usuário no Telegram.
+
+---
+
+## 3. Metodologia - CRISP-DM
+
+O projeto foi estruturado seguindo o **CRISP-DM (Cross-Industry Standard Process for Data Mining)**, uma metodologia robusta e cíclica que garante que o projeto de ciência de dados esteja sempre alinhado com os objetivos de negócio.
+
+```mermaid
+graph TD
+    subgraph Ciclo CRISP-DM
+        BU[1. Business Understanding] --> DU[2. Data Understanding];
+        DU --> DP[3. Data Preparation];
+        DP --> M[4. Modeling];
+        M --> E[5. Evaluation];
+        E --> D[6. Deployment];
+        D --> BU;
+    end
+
+    style BU fill:#f9f,stroke:#333,stroke-width:2px
+    style DU fill:#ccf,stroke:#333,stroke-width:2px
+    style DP fill:#cff,stroke:#333,stroke-width:2px
+    style M fill:#cfc,stroke:#333,stroke-width:2px
+    style E fill:#ffc,stroke:#333,stroke-width:2px
+    style D fill:#fcc,stroke:#333,stroke-width:2px
+```
+
+---
+
+## 4. Tecnologias Utilizadas
 
 Este projeto foi desenvolvido utilizando o ecossistema Python, com as seguintes bibliotecas e frameworks principais:
 
@@ -22,7 +82,7 @@ Este projeto foi desenvolvido utilizando o ecossistema Python, com as seguintes 
 
 ---
 
-## 3. Estrutura do Projeto
+## 5. Estrutura do Projeto
 
 O repositório está organizado da seguinte forma para garantir a modularidade e a clareza:
 
@@ -40,16 +100,16 @@ O repositório está organizado da seguinte forma para garantir a modularidade e
 
 ---
 
-## 4. Instalação e Como Executar
+## 6. Instalação e Como Executar
 
 Para executar este projeto localmente, siga os passos abaixo. Recomenda-se o uso de ambientes virtuais (`venv`) para isolar as dependências.
 
-### 4.1. Pré-requisitos
+### 6.1. Pré-requisitos
 
 -   Python 3.9 ou superior
 -   Git
 
-### 4.2. Clonando o Repositório
+### 6.2. Clonando o Repositório
 
 ```bash
 git clone https://github.com/seu-usuario/seu-repositorio.git
