@@ -74,6 +74,7 @@ def load_dataset(store_id: int) -> str:
 def predict(data: str) -> Optional[pd.DataFrame]:
     """Calls the prediction API and returns the result as a DataFrame."""
     headers = {'Content-type': 'application/json'}
+    logging.info(f"Sending data to API: {data[:500]}...") # Log first 500 chars
     try:
         response = requests.post(API_URL, data=data, headers=headers)
         response.raise_for_status()
@@ -89,22 +90,26 @@ def predict(data: str) -> Optional[pd.DataFrame]:
         logging.error(f"API call failed: {e}")
         return None
     except json.JSONDecodeError:
-        logging.error(f"Failed to decode JSON from API response: {response.text}")
+        logging.error(f"Failed to decode JSON from API response. Response text: {response.text}")
         return None
 
 def parse_message(message: dict) -> Tuple[Optional[int], Union[int, str]]:
     """Parses the chat_id and store_id from the incoming message."""
-    chat_id = None
     try:
         chat_id = message['message']['chat']['id']
-        store_id_str = message['message']['text'].replace('/', '')
+        store_id_str = message['message']['text']
+
+        # Basic validation for command-like format
+        if not store_id_str.startswith('/'):
+            return chat_id, 'error'
+
+        store_id_str = store_id_str.replace('/', '')
         store_id = int(store_id_str)
         return chat_id, store_id
-    except (KeyError, ValueError):
-        # If message format is unexpected or store_id is not an integer
-        if chat_id is None and 'message' in message and 'chat' in message['message']:
-             chat_id = message['message']['chat'].get('id')
-        return chat_id, 'error'
+    except (KeyError, ValueError, AttributeError):
+        # Safely get chat_id even if other keys are missing
+        chat_id_safe = message.get('message', {}).get('chat', {}).get('id')
+        return chat_id_safe, 'error'
 
 # API initialize
 app = Flask(__name__)
@@ -139,20 +144,20 @@ def index():
         return Response('Ok', status=200)
 
     # calculation
-    df_sum = df_prediction[['store', 'prediction']].groupby('store').sum().reset_index()
+    df_sum = df_prediction[['Store', 'Prediction']].groupby('Store').sum().reset_index()
     
     if df_sum.empty:
         send_message(chat_id, f'No predictions could be calculated for Store {store_id}.')
         return Response('Ok', status=200)
 
     # send message
-    store = df_sum['store'].values[0]
-    prediction_value = df_sum['prediction'].values[0]
+    store = df_sum['Store'].values[0]
+    prediction_value = df_sum['Prediction'].values[0]
     msg = f'Store Number {store} will sell R${prediction_value:,.2f} in the next 6 weeks.'
     
     send_message(chat_id, msg)
     return Response('Ok', status=200)
 
-if __name__ == '__main__':
+if __name__ == '__main__':  
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
