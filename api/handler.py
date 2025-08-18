@@ -76,6 +76,14 @@ rossmann = Rossmann(
 # Initialize Flask app
 app = Flask(__name__)
 
+@app.route("/", methods=["GET"])
+def health_check():
+    """
+    A simple health check endpoint to keep the service alive on free tiers
+    and to verify that the service is running.
+    """
+    return jsonify({"status": "ok", "message": "API is running"}), 200
+
 @app.route("/rossmann/predict", methods=["POST"])
 def rossmann_predict():
     """
@@ -114,4 +122,6 @@ def rossmann_predict():
         return jsonify({"error": "An internal error occurred during prediction."}), 500
 
 if __name__ == "__main__":
-    app.run("0.0.0.0", port=5001)
+    # Render provides the port via the PORT environment variable.
+    port = int(os.environ.get("PORT", 5001))
+    app.run("0.0.0.0", port=port)
