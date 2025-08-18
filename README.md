@@ -71,7 +71,7 @@ A imagem abaixo demonstra a interação: o usuário envia o ID da loja (ex: `/24
 
 O projeto foi estruturado seguindo o **CRISP-DM (Cross-Industry Standard Process for Data Mining)**, uma metodologia robusta e cíclica que garante que o projeto de ciência de dados esteja sempre alinhado com os objetivos de negócio.
 <p align="center">
-<img title="Metodologia CRIPS-DS" alt="Alt text" src="/images/crisp-dm.png" width="400">
+<img title="Metodologia CRIPS-DS" alt="Alt text" src="/images/crisp-dm.png" width="600">
 </p>
 
 ---
