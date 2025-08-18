@@ -190,6 +190,7 @@ O bot serve como uma interface amigável para consultar as previsões da API.
 
 Os serviços da API e do Bot foram implantados na plataforma **Render**. Como o plano gratuito do Render suspende os serviços após 15 minutos de inatividade, foi configurado um workflow do **GitHub Actions** (`.github/workflows/keep-alive.yml`) para enviar requisições a cada 10 minutos, mantendo os serviços sempre ativos e responsivos.
 
+---
 
 ## Análise Exploratória - Principais Insights
 
@@ -203,7 +204,6 @@ A análise exploratória de dados (EDA) foi fundamental para entender a dinâmic
 | **Férias Escolares** | Válida | Alta | As vendas são consistentemente **menores durante os períodos de férias escolares**. |
 | **Finais de Semana** | Parcialmente Válida | Média | O volume total de vendas cai nos finais de semana. No entanto, as poucas lojas que abrem aos domingos possuem uma **média de vendas elevada**. |
 
-
 ---
 
 ## Preparação dos Dados e Engenharia de Atributos
@@ -216,7 +216,6 @@ O processo de preparação dos dados foi encapsulado na classe `Rossmann` e envo
     -   **Rescalonamento:** Variáveis numéricas como `CompetitionDistance` e `Year` foram normalizadas para que o modelo não seja enviesado por diferentes escalas.
     -   **Encoding:** Variáveis categóricas foram transformadas em representações numéricas (`One-Hot Encoding` para `StateHoliday`, `Label Encoding` para `StoreType` e `Ordinal Encoding` para `Assortment`).
     -   **Transformação Cíclica:** Features temporais como `DayOfWeek` e `Month` foram transformadas em componentes seno e cosseno para que o modelo entenda sua natureza cíclica.
-
 
 ---
 
@@ -232,7 +231,6 @@ Após a tunagem de hiperparâmetros, os resultados finais do modelo no conjunto 
 | **MAPE** (Mean Absolute Percentage Error) | 9.92% | Média do erro percentual absoluto. |
 | **RMSE** (Root Mean Squared Error) | 995.73 | Raiz do erro quadrático médio, que penaliza mais os erros grandes. |
 
-
 ---
 
 ## Análise de Negócio e Financeira
@@ -241,7 +239,6 @@ O desempenho do modelo foi traduzido em impacto de negócio, fornecendo uma vis�
 
 -   **Previsão de Faturamento Total:** O modelo prevê um faturamento total de **R$ 283.76 milhões** para as próximas 6 semanas, considerando todas as lojas.
 -   **Cenários de Risco:** Para auxiliar na tomada de decisão, foram calculados o melhor e o pior cenário, que estimam um faturamento entre **R$ 283.00 milhões** e **R$ 284.52 milhões**.
-
 
 ---
 
