@@ -1,6 +1,6 @@
-# Previsão de Vendas da Rede Rossmann
+# Previsão de Vendas da Rede de Drogarias Rossmann
 
-## 1. Problema de Negócio
+## Problema de Negócio
 
 A Rossmann, uma das maiores redes de drogarias da Europa com mais de 3.000 lojas, enfrenta o desafio de prever com precisão suas vendas diárias com até seis semanas de antecedência. Atualmente, essa tarefa é delegada aos gerentes de cada loja, resultando em previsões com grande variação de acurácia, pois são baseadas em experiências empíricas e processos descentralizados.
 
@@ -10,67 +10,73 @@ A solução proposta é um **sistema de previsão de vendas utilizando Machine L
 
 ---
 
-## 2. Arquitetura da Solução
+## Arquitetura da Solução
 
 A solução foi desenhada para ser robusta, escalável e de fácil acesso para os usuários finais. O fluxo de dados e interações segue a arquitetura abaixo:
 
-```mermaid
-graph TD
-    A[👤 Usuário] -->|1. Envia ID da loja (ex: /24)| B(💬 Bot do Telegram);
-    B -->|2. Encaminha para Webhook| C{🤖 Serviço do Bot no Render};
-    C -->|3. Busca dados e envia p/ API| D{⚙️ API de Previsão no Render};
-    D -->|4. Pré-processa e executa modelo| E[🧠 Modelo XGBoost];
-    E -->|5. Retorna previsão| D;
-    D -->|6. Retorna JSON da previsão| C;
-    C -->|7. Formata e envia resposta| B;
-    B -->|8. Entrega mensagem final| A;
+---
 
-    style A fill:#D6EAF8,stroke:#333,stroke-width:2px
-    style B fill:#AED6F1,stroke:#333,stroke-width:2px
-    style C fill:#85C1E9,stroke:#333,stroke-width:2px
-    style D fill:#5DADE2,stroke:#333,stroke-width:2px
-    style E fill:#3498DB,stroke:#333,stroke-width:2px
-```
+## Fluxo de Comunicação:
 
-**Passo a Passo do Fluxo:**
+#### Usuário → Bot do Telegram
 
-1.  **Interação do Usuário:** Um gerente de loja envia uma mensagem com o ID da loja (ex: `/24`) para o bot no Telegram.
-2.  **Webhook:** O Telegram encaminha a mensagem para o serviço do bot hospedado no Render.
-3.  **Orquestração do Bot:** O bot recebe a mensagem, extrai o ID da loja e carrega os dados brutos necessários para a previsão.
-4.  **Chamada à API:** O bot envia esses dados em formato JSON para a API de previsão, também hospedada no Render.
-5.  **Previsão:** A API recebe os dados, aplica todo o pipeline de pré-processamento e utiliza o modelo XGBoost treinado para gerar as previsões de vendas.
-6.  **Retorno da Previsão:** A API retorna as previsões em formato JSON para o bot.
-7.  **Formatação da Resposta:** O bot recebe as previsões, calcula o faturamento total e formata uma mensagem clara e amigável.
-8.  **Entrega ao Usuário:** O bot envia a mensagem final para o usuário no Telegram.
+- O usuário (um stakeholder, como um gerente de loja) envia uma mensagem para o seu bot no Telegram com o ID de uma loja. Exemplo: /24.
+
+#### Bot do Telegram → Seu Bot no Render (Webhook)
+
+- O servidor do Telegram recebe essa mensagem e a encaminha imediatamente para a URL do seu bot que está rodando no Render (o "webhook" que foi configurado).
+
+#### Bot no Render → API de Previsão no Render
+
+- O script rossmann-bot.py recebe a requisição.
+- Ele extrai o ID da loja (24).
+- Carrega os dados das próximas 6 semanas para essa loja a partir dos arquivos test.csv e store.csv.
+- Converte esses dados em formato JSON.
+- Envia uma requisição POST com esse JSON para o endpoint da API de previsão (/rossmann/predict), que também está rodando no Render.
+
+#### API de Previsão → Modelo de Machine Learning
+
+- Seu script handler.py (a API) recebe os dados.
+- A classe Rossmann realiza todo o pré-processamento necessário (limpeza, engenharia de atributos, encoding, etc.).
+- Os dados preparados são passados para o modelo XGBoost, que gera as previsões de vendas.
+
+#### API de Previsão → Bot no Render
+
+- A API retorna as previsões em formato JSON para o serviço do bot.
+
+#### Bot no Render → Usuário
+
+- O script do bot recebe a resposta da API.
+- Ele calcula o total das vendas previstas para as 6 semanas.
+- Formata uma mensagem amigável e clara para o usuário (ex: "A loja 24 venderá R$ X nas próximas 6 semanas.").
+- Envia essa mensagem final de volta para o usuário através da API do Telegram.
+
+> **IMPORTANTE:** Essencialmente, o bot atua como um orquestrador inteligente: ele entende o pedido do usuário, busca os dados brutos necessários, solicita a "mágica" (a previsão) à API e, finalmente, traduz o resultado técnico em uma resposta de negócio útil.
 
 ---
 
-## 3. Metodologia - CRISP-DM
+## Demonstração em Funcionamento
+
+Para facilitar o acesso às previsões, foi desenvolvido um bot no Telegram que serve como uma interface direta e amigável. Qualquer stakeholder pode solicitar a previsão de vendas para as próximas 6 semanas de uma loja específica simplesmente enviando o ID da loja para o bot.
+
+A imagem abaixo demonstra a interação: o usuário envia o ID da loja (ex: `/24`) e o bot responde prontamente com o faturamento total previsto para o período.
+
+<p align="center">
+  <img title="Demonstração do Bot no Telegram" alt="Demonstração do Bot no Telegram" src="/images/bot-telegran.jpeg" width="400">
+</p>
+
+---
+
+## Metodologia - CRISP-DM
 
 O projeto foi estruturado seguindo o **CRISP-DM (Cross-Industry Standard Process for Data Mining)**, uma metodologia robusta e cíclica que garante que o projeto de ciência de dados esteja sempre alinhado com os objetivos de negócio.
-
-```mermaid
-graph TD
-    subgraph Ciclo CRISP-DM
-        BU[1. Business Understanding] --> DU[2. Data Understanding];
-        DU --> DP[3. Data Preparation];
-        DP --> M[4. Modeling];
-        M --> E[5. Evaluation];
-        E --> D[6. Deployment];
-        D --> BU;
-    end
-
-    style BU fill:#f9f,stroke:#333,stroke-width:2px
-    style DU fill:#ccf,stroke:#333,stroke-width:2px
-    style DP fill:#cff,stroke:#333,stroke-width:2px
-    style M fill:#cfc,stroke:#333,stroke-width:2px
-    style E fill:#ffc,stroke:#333,stroke-width:2px
-    style D fill:#fcc,stroke:#333,stroke-width:2px
-```
+<p align="center">
+<img title="Metodologia CRIPS-DS" alt="Alt text" src="/images/crisp-dm.png">
+</p>
 
 ---
 
-## 4. Tecnologias Utilizadas
+## Tecnologias Utilizadas
 
 Este projeto foi desenvolvido utilizando o ecossistema Python, com as seguintes bibliotecas e frameworks principais:
 
@@ -82,7 +88,7 @@ Este projeto foi desenvolvido utilizando o ecossistema Python, com as seguintes 
 
 ---
 
-## 5. Estrutura do Projeto
+## Estrutura do Projeto
 
 O repositório está organizado da seguinte forma para garantir a modularidade e a clareza:
 
@@ -100,22 +106,22 @@ O repositório está organizado da seguinte forma para garantir a modularidade e
 
 ---
 
-## 6. Instalação e Como Executar
+## Instalação e Como Executar
 
 Para executar este projeto localmente, siga os passos abaixo. Recomenda-se o uso de ambientes virtuais (`venv`) para isolar as dependências.
 
-### 6.1. Pré-requisitos
+### Pré-requisitos
 
 -   Python 3.9 ou superior
 
-### 6.2. Clonando o Repositório
+### Clonando o Repositório
 
 ```bash
 git clone https://github.com/seu-usuario/rossmann-sales-forecast.git
 cd rossmann-sales-forecast
 ```
 
-### 6.3. Executando a API de Previsão
+### Executando a API de Previsão
 
 A API é o núcleo do projeto, responsável por receber os dados, processá-los e retornar as previsões.
 
@@ -142,7 +148,7 @@ A API é o núcleo do projeto, responsável por receber os dados, processá-los 
     ```
     A API estará rodando em `http://127.0.0.1:5001`.
 
-### 6.4. Executando o Bot do Telegram
+### Executando o Bot do Telegram
 
 O bot serve como uma interface amigável para consultar as previsões da API.
 
@@ -177,14 +183,15 @@ O bot serve como uma interface amigável para consultar as previsões da API.
     ```
     O bot agora está online. Envie o ID de uma loja (ex: `/10`) para receber a previsão de vendas.
 
+---
 
-## 7. Deploy e Manutenção
+
+## Deploy e Manutenção
 
 Os serviços da API e do Bot foram implantados na plataforma **Render**. Como o plano gratuito do Render suspende os serviços após 15 minutos de inatividade, foi configurado um workflow do **GitHub Actions** (`.github/workflows/keep-alive.yml`) para enviar requisições a cada 10 minutos, mantendo os serviços sempre ativos e responsivos.
 
----
 
-## 8. Análise Exploratória - Principais Insights
+## Análise Exploratória - Principais Insights
 
 A análise exploratória de dados (EDA) foi fundamental para entender a dinâmica das vendas e validar hipóteses de negócio. Abaixo estão os principais insights obtidos:
 
@@ -197,7 +204,9 @@ A análise exploratória de dados (EDA) foi fundamental para entender a dinâmic
 | **Finais de Semana** | Parcialmente Válida | Média | O volume total de vendas cai nos finais de semana. No entanto, as poucas lojas que abrem aos domingos possuem uma **média de vendas elevada**. |
 
 
-## 9. Preparação dos Dados e Engenharia de Atributos
+---
+
+## Preparação dos Dados e Engenharia de Atributos
 
 O processo de preparação dos dados foi encapsulado na classe `Rossmann` e envolveu as seguintes etapas:
 
@@ -209,7 +218,9 @@ O processo de preparação dos dados foi encapsulado na classe `Rossmann` e envo
     -   **Transformação Cíclica:** Features temporais como `DayOfWeek` e `Month` foram transformadas em componentes seno e cosseno para que o modelo entenda sua natureza cíclica.
 
 
-## 10. Modelagem e Resultados
+---
+
+## Modelagem e Resultados
 
 Foram testados múltiplos algoritmos de regressão (Regressão Linear, Lasso, Random Forest, XGBoost). Os modelos não lineares apresentaram performance superior, e o **XGBoost Regressor** foi selecionado como o modelo final devido ao seu excelente equilíbrio entre performance e custo computacional. A avaliação foi realizada utilizando **Validação Cruzada para Séries Temporais**, garantindo uma estimativa robusta do erro em dados não vistos.
 
@@ -222,19 +233,20 @@ Após a tunagem de hiperparâmetros, os resultados finais do modelo no conjunto 
 | **RMSE** (Root Mean Squared Error) | 995.73 | Raiz do erro quadrático médio, que penaliza mais os erros grandes. |
 
 
-## 11. Análise de Negócio e Financeira
+---
+
+## Análise de Negócio e Financeira
 
 O desempenho do modelo foi traduzido em impacto de negócio, fornecendo uma visão clara do seu valor financeiro.
 
 -   **Previsão de Faturamento Total:** O modelo prevê um faturamento total de **R$ 283.76 milhões** para as próximas 6 semanas, considerando todas as lojas.
 -   **Cenários de Risco:** Para auxiliar na tomada de decisão, foram calculados o melhor e o pior cenário, que estimam um faturamento entre **R$ 283.00 milhões** e **R$ 284.52 milhões**.
--   **Análise por Loja:** O modelo permite analisar o erro (MAPE) individualmente por loja, identificando aquelas onde a previsão é mais ou menos assertiva e direcionando ações específicas.
 
 
-## 12. Próximos Passos
+---
 
--   **Análise de Resultados do Modelo:** Coletar e consolidar os resultados práticos do modelo para identificar padrões de erro.
--   **Tratamento de Lojas com Alto Erro:** Investigar as causas de erro em lojas com MAPE > 25%, avaliando abordagens como segmentação de modelos ou inclusão de variáveis contextuais.
--   **Redução do Erro do Modelo:** Testar algoritmos alternativos e diferentes técnicas de tratamento de outliers.
+## Próximos Passos
+
+-   **Engenharia de Features Avançada:** Explorar a criação de novas variáveis e interações entre elas para capturar padrões mais complexos.
 -   **Monitoramento e Atualização Contínua:** Estabelecer rotinas de monitoramento do desempenho do modelo em produção e definir critérios para re-treinamento periódico.
 -   **Documentação e Reprodutibilidade:** Manter a documentação de todas as etapas do pipeline atualizada para garantir a reprodutibilidade e facilitar futuras manutenções.
