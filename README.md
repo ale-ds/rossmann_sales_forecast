@@ -18,15 +18,15 @@ A solução foi desenhada para ser robusta, escalável e de fácil acesso para o
 
 ## Fluxo de Comunicação:
 
-#### Usuário → Bot do Telegram
+### Usuário → Bot do Telegram
 
 - O usuário (um stakeholder, como um gerente de loja) envia uma mensagem para o seu bot no Telegram com o ID de uma loja. Exemplo: /24.
 
-#### Bot do Telegram → Seu Bot no Render (Webhook)
+### Bot do Telegram → Seu Bot no Render (Webhook)
 
 - O servidor do Telegram recebe essa mensagem e a encaminha imediatamente para a URL do seu bot que está rodando no Render (o "webhook" que foi configurado).
 
-#### Bot no Render → API de Previsão no Render
+### Bot no Render → API de Previsão no Render
 
 - O script rossmann-bot.py recebe a requisição.
 - Ele extrai o ID da loja (24).
@@ -34,17 +34,17 @@ A solução foi desenhada para ser robusta, escalável e de fácil acesso para o
 - Converte esses dados em formato JSON.
 - Envia uma requisição POST com esse JSON para o endpoint da API de previsão (/rossmann/predict), que também está rodando no Render.
 
-#### API de Previsão → Modelo de Machine Learning
+### API de Previsão → Modelo de Machine Learning
 
 - Seu script handler.py (a API) recebe os dados.
 - A classe Rossmann realiza todo o pré-processamento necessário (limpeza, engenharia de atributos, encoding, etc.).
 - Os dados preparados são passados para o modelo XGBoost, que gera as previsões de vendas.
 
-#### API de Previsão → Bot no Render
+### API de Previsão → Bot no Render
 
 - A API retorna as previsões em formato JSON para o serviço do bot.
 
-#### Bot no Render → Usuário
+### Bot no Render → Usuário
 
 - O script do bot recebe a resposta da API.
 - Ele calcula o total das vendas previstas para as 6 semanas.
@@ -71,7 +71,7 @@ A imagem abaixo demonstra a interação: o usuário envia o ID da loja (ex: `/24
 
 O projeto foi estruturado seguindo o **CRISP-DM (Cross-Industry Standard Process for Data Mining)**, uma metodologia robusta e cíclica que garante que o projeto de ciência de dados esteja sempre alinhado com os objetivos de negócio.
 <p align="center">
-<img title="Metodologia CRIPS-DS" alt="Alt text" src="/images/crisp-dm.png">
+<img title="Metodologia CRIPS-DS" alt="Alt text" src="/images/crisp-dm.png" width="400">
 </p>
 
 ---
