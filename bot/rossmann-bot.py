@@ -18,10 +18,13 @@ load_dotenv()
 
 # Constants
 TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
-API_URL = os.environ.get('API_URL', 'https://rossmann-model-bgly.onrender.com/rossmann/predict')
+API_URL = os.environ.get('API_URL')
 
 if not TOKEN:
     raise ValueError("The environment variable TELEGRAM_BOT_TOKEN is not set.")
+if not API_URL:
+    raise ValueError("The environment variable API_URL is not set.")
+
 
 def send_message(chat_id: int, text: str) -> None:
     """Sends a message to a specific Telegram chat."""
