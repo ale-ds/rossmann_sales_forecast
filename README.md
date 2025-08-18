@@ -107,16 +107,15 @@ Para executar este projeto localmente, siga os passos abaixo. Recomenda-se o uso
 ### 6.1. Pré-requisitos
 
 -   Python 3.9 ou superior
--   Git
 
 ### 6.2. Clonando o Repositório
 
 ```bash
-git clone https://github.com/seu-usuario/seu-repositorio.git
-cd seu-repositorio
+git clone https://github.com/seu-usuario/rossmann-sales-forecast.git
+cd rossmann-sales-forecast
 ```
 
-### 4.3. Executando a API de Previsão
+### 6.3. Executando a API de Previsão
 
 A API é o núcleo do projeto, responsável por receber os dados, processá-los e retornar as previsões.
 
@@ -141,9 +140,9 @@ A API é o núcleo do projeto, responsável por receber os dados, processá-los 
     ```bash
     python handler.py
     ```
-    A API estará rodando em `http://127.0.0.1:8080`.
+    A API estará rodando em `http://127.0.0.1:5001`.
 
-### 4.4. Executando o Bot do Telegram
+### 6.4. Executando o Bot do Telegram
 
 O bot serve como uma interface amigável para consultar as previsões da API.
 
@@ -166,9 +165,9 @@ O bot serve como uma interface amigável para consultar as previsões da API.
 
 4.  **Configure as Variáveis de Ambiente:**
     Crie um arquivo chamado `.env` dentro da pasta `bot/` e adicione as seguintes variáveis:
-    ```
+    ```bash
     TELEGRAM_BOT_TOKEN="SEU_TOKEN_AQUI"
-    API_URL="http://127.0.0.1:8080/rossmann/predict"
+    API_URL="http://127.0.0.1:5001/rossmann/predict"
     ```
     > **IMPORTANTE:** Adicione o arquivo `.env` ao seu `.gitignore` para não expor seu token.
 
@@ -178,9 +177,14 @@ O bot serve como uma interface amigável para consultar as previsões da API.
     ```
     O bot agora está online. Envie o ID de uma loja (ex: `/10`) para receber a previsão de vendas.
 
+
+## 7. Deploy e Manutenção
+
+Os serviços da API e do Bot foram implantados na plataforma **Render**. Como o plano gratuito do Render suspende os serviços após 15 minutos de inatividade, foi configurado um workflow do **GitHub Actions** (`.github/workflows/keep-alive.yml`) para enviar requisições a cada 10 minutos, mantendo os serviços sempre ativos e responsivos.
+
 ---
 
-## 5. Análise Exploratória - Principais Insights
+## 8. Análise Exploratória - Principais Insights
 
 A análise exploratória de dados (EDA) foi fundamental para entender a dinâmica das vendas e validar hipóteses de negócio. Abaixo estão os principais insights obtidos:
 
@@ -192,9 +196,8 @@ A análise exploratória de dados (EDA) foi fundamental para entender a dinâmic
 | **Férias Escolares** | Válida | Alta | As vendas são consistentemente **menores durante os períodos de férias escolares**. |
 | **Finais de Semana** | Parcialmente Válida | Média | O volume total de vendas cai nos finais de semana. No entanto, as poucas lojas que abrem aos domingos possuem uma **média de vendas elevada**. |
 
----
 
-## 6. Preparação dos Dados e Engenharia de Atributos
+## 9. Preparação dos Dados e Engenharia de Atributos
 
 O processo de preparação dos dados foi encapsulado na classe `Rossmann` e envolveu as seguintes etapas:
 
@@ -205,9 +208,8 @@ O processo de preparação dos dados foi encapsulado na classe `Rossmann` e envo
     -   **Encoding:** Variáveis categóricas foram transformadas em representações numéricas (`One-Hot Encoding` para `StateHoliday`, `Label Encoding` para `StoreType` e `Ordinal Encoding` para `Assortment`).
     -   **Transformação Cíclica:** Features temporais como `DayOfWeek` e `Month` foram transformadas em componentes seno e cosseno para que o modelo entenda sua natureza cíclica.
 
----
 
-## 7. Modelagem e Resultados
+## 10. Modelagem e Resultados
 
 Foram testados múltiplos algoritmos de regressão (Regressão Linear, Lasso, Random Forest, XGBoost). Os modelos não lineares apresentaram performance superior, e o **XGBoost Regressor** foi selecionado como o modelo final devido ao seu excelente equilíbrio entre performance e custo computacional. A avaliação foi realizada utilizando **Validação Cruzada para Séries Temporais**, garantindo uma estimativa robusta do erro em dados não vistos.
 
@@ -219,9 +221,8 @@ Após a tunagem de hiperparâmetros, os resultados finais do modelo no conjunto 
 | **MAPE** (Mean Absolute Percentage Error) | 9.92% | Média do erro percentual absoluto. |
 | **RMSE** (Root Mean Squared Error) | 995.73 | Raiz do erro quadrático médio, que penaliza mais os erros grandes. |
 
----
 
-## 8. Análise de Negócio e Financeira
+## 11. Análise de Negócio e Financeira
 
 O desempenho do modelo foi traduzido em impacto de negócio, fornecendo uma visão clara do seu valor financeiro.
 
@@ -229,12 +230,9 @@ O desempenho do modelo foi traduzido em impacto de negócio, fornecendo uma vis�
 -   **Cenários de Risco:** Para auxiliar na tomada de decisão, foram calculados o melhor e o pior cenário, que estimam um faturamento entre **R$ 283.00 milhões** e **R$ 284.52 milhões**.
 -   **Análise por Loja:** O modelo permite analisar o erro (MAPE) individualmente por loja, identificando aquelas onde a previsão é mais ou menos assertiva e direcionando ações específicas.
 
----
 
-## 9. Próximos Passos
+## 12. Próximos Passos
 
--   **Completar o Ano de 2015:** Identificar e coletar os meses faltantes de 2015 para garantir a integridade temporal dos dados.
--   **Engenharia de Features Avançada:** Explorar a criação de novas variáveis e interações entre elas para capturar padrões mais complexos.
 -   **Análise de Resultados do Modelo:** Coletar e consolidar os resultados práticos do modelo para identificar padrões de erro.
 -   **Tratamento de Lojas com Alto Erro:** Investigar as causas de erro em lojas com MAPE > 25%, avaliando abordagens como segmentação de modelos ou inclusão de variáveis contextuais.
 -   **Redução do Erro do Modelo:** Testar algoritmos alternativos e diferentes técnicas de tratamento de outliers.
