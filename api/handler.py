@@ -76,7 +76,7 @@ rossmann = Rossmann(
 # Initialize Flask app
 app = Flask(__name__)
 
-@app.route("/", methods=["GET"])
+@app.route("/health_check", methods=["GET"])
 def health_check():
     """
     A simple health check endpoint to keep the service alive on free tiers

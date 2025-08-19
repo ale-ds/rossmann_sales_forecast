@@ -15,12 +15,10 @@ jobs:
         # O comando 'curl' envia uma requisição HTTP.
         # O '-sS' faz com que ele opere silenciosamente, mas mostre erros se ocorrerem.
         # O '|| true' garante que o workflow não falhe se o serviço estiver temporariamente indisponível.
-        run: curl -sS "https://rossmann-sales-forecast-flnh.onrender.com/" || true
+        run: curl -sS "https://rossmann-sales-forecast-flnh.onrender.com/health_check" || true
 
       - name: Ping Bot Service
-        run: curl -sS "https://rossmann-telegram-bot-92ce.onrender.com/" || true
+        run: curl -sS "https://rossmann-telegram-bot-92ce.onrender.com/health_check" || true
 
       - name: Workflow status
         run: echo "Ping jobs completed at $(date)"
-
-

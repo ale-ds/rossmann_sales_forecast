@@ -117,11 +117,16 @@ def parse_message(message: dict) -> Tuple[Optional[int], Union[int, str]]:
 # API initialize
 app = Flask(__name__)
 
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    if request.method != 'POST':
-        return '<h1>Rossmann Telegram BOT</h1>'
+@app.route('/health_check', methods=['GET'])
+def health_check():
+    """A simple health check endpoint to keep the service alive."""
+    return Response('{"status": "ok"}', status=200, mimetype='application/json')
 
+@app.route('/', methods=['POST'])
+def index():
+    """
+    Main endpoint to receive webhook updates from Telegram.
+    """
     message = request.get_json()
     if not message:
         logging.warning("Received an empty POST request.")
