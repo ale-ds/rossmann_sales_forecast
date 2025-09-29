@@ -1,249 +1,227 @@
-# Previsão de Vendas da Rede de Drogarias Rossmann
-
-## Problema de Negócio
-
-A Rossmann, uma das maiores redes de drogarias da Europa com mais de 3.000 lojas, enfrenta o desafio de prever com precisão suas vendas diárias com até seis semanas de antecedência. Atualmente, essa tarefa é delegada aos gerentes de cada loja, resultando em previsões com grande variação de acurácia, pois são baseadas em experiências empíricas e processos descentralizados.
-
-O objetivo principal deste projeto é desenvolver uma solução centralizada e baseada em dados para **prever as vendas das lojas para as próximas seis semanas**, permitindo um planejamento mais eficiente da alocação de recursos para futuras reformas.
-
-A solução proposta é um **sistema de previsão de vendas utilizando Machine Learning**, com as previsões acessíveis através de uma API REST e um bot no Telegram, garantindo que os stakeholders possam consultar os dados de qualquer lugar.
-
----
-
-## Arquitetura da Solução
-
-A solução foi desenhada para ser robusta, escalável e de fácil acesso para os usuários finais. O fluxo de dados e interações segue a arquitetura abaixo:
-
----
-
-## Fluxo de Comunicação:
-
-### Usuário → Bot do Telegram
-
-- O usuário (um stakeholder, como um gerente de loja) envia uma mensagem para o seu bot no Telegram com o ID de uma loja. Exemplo: /24.
-
-### Bot do Telegram → Seu Bot no Render (Webhook)
-
-- O servidor do Telegram recebe essa mensagem e a encaminha imediatamente para a URL do seu bot que está rodando no Render (o "webhook" que foi configurado).
-
-### Bot no Render → API de Previsão no Render
-
-- O script rossmann-bot.py recebe a requisição.
-- Ele extrai o ID da loja (24).
-- Carrega os dados das próximas 6 semanas para essa loja a partir dos arquivos test.csv e store.csv.
-- Converte esses dados em formato JSON.
-- Envia uma requisição POST com esse JSON para o endpoint da API de previsão (/rossmann/predict), que também está rodando no Render.
-
-### API de Previsão → Modelo de Machine Learning
-
-- Seu script handler.py (a API) recebe os dados.
-- A classe Rossmann realiza todo o pré-processamento necessário (limpeza, engenharia de atributos, encoding, etc.).
-- Os dados preparados são passados para o modelo XGBoost, que gera as previsões de vendas.
-
-### API de Previsão → Bot no Render
-
-- A API retorna as previsões em formato JSON para o serviço do bot.
-
-### Bot no Render → Usuário
-
-- O script do bot recebe a resposta da API.
-- Ele calcula o total das vendas previstas para as 6 semanas.
-- Formata uma mensagem amigável e clara para o usuário (ex: "A loja 24 venderá R$ X nas próximas 6 semanas.").
-- Envia essa mensagem final de volta para o usuário através da API do Telegram.
-
-> **IMPORTANTE:** Essencialmente, o bot atua como um orquestrador inteligente: ele entende o pedido do usuário, busca os dados brutos necessários, solicita a "mágica" (a previsão) à API e, finalmente, traduz o resultado técnico em uma resposta de negócio útil.
-
----
-
-## Demonstração em Funcionamento
-
-Para facilitar o acesso às previsões, foi desenvolvido um bot no Telegram que serve como uma interface direta e amigável. Qualquer stakeholder pode solicitar a previsão de vendas para as próximas 6 semanas de uma loja específica simplesmente enviando o ID da loja para o bot.
-
-A imagem abaixo demonstra a interação: o usuário envia o ID da loja (ex: `/24`) e o bot responde prontamente com o faturamento total previsto para o período.
-
 <p align="center">
-  <img title="Demonstração do Bot no Telegram" alt="Demonstração do Bot no Telegram" src="/images/bot-telegran.jpeg" width="400">
+  <img src="images/banner.png" alt="Banner do Projeto Rossmann Sales Forecast"/>
 </p>
 
----
+# Previsão de Vendas - Rossmann
 
-## Metodologia - CRISP-DM
+> **Status:** Finalizado ✔️
 
-O projeto foi estruturado seguindo o **CRISP-DM (Cross-Industry Standard Process for Data Mining)**, uma metodologia robusta e cíclica que garante que o projeto de ciência de dados esteja sempre alinhado com os objetivos de negócio.
+## 1. Problema de Negócio
+
+A Rossmann, uma das maiores redes de drogarias da Europa, opera mais de 3.000 lojas e necessita de uma previsão de vendas precisa para as próximas 6 semanas. Atualmente, as previsões são feitas individualmente pelos gerentes de cada loja, baseadas em suas experiências, o que gera uma grande variação na acurácia e dificulta o planejamento centralizado de recursos, como a alocação de verbas para reformas.
+
+O objetivo deste projeto é desenvolver um modelo de Machine Learning que forneça previsões de vendas centralizadas e precisas, auxiliando o CFO na tomada de decisões estratégicas sobre o orçamento de reformas.
+
+## 2. Metodologia
+O projeto foi estruturado seguindo a metodologia **CRISP-DS**, dividida em 10 etapas:
+
+1.  Compreender com clareza o modelo e o problema de negócios, usando estatísticas descritivas.
+2.  AnalisarTratar os dados (formatos, dados faltantes, outliers), realizando a limpeza necessária.
+3.  Junto com o time de negócios, identificar quais são as características que influenciam nas vendas. Formular e validar hipóteses para gerar insights.
+4.  Preparar os dados para criar o modelo de previsão de vendas, fazendo transformações, separando o dataframe em treino e teste, e automatizando a escolha das “features” mais importantes.
+5. Treinar algoritmos de Machine Learning (lineares e não lineares), comparar os resultados e escolher o que tiver melhor desempenho.
+6. Encontrar e ajustar os parâmetros do modelo para melhorar o aprendizado e reduzir o erro nas previsões.
+7. Interpretar o erro do modelo e traduzir isso em impacto financeiro para a empresa.
+8. Avaliar se a previsão de vendas já está gerando valor para o time de negócios. Se sim, publicar em produção; se não, fazer ajustes para melhorias.
+9. Depois de publicado, criar um robô no Telegram que permita acessar a previsão em tempo real, de qualquer lugar.
+10. Apresentar o bot do Telegram aos gerentes e ao CFO, explicando como o modelo funciona e tirando todas as dúvidas.
+
+## 3. Hipóteses de Negócio
+
+A solução foi desenvolvida seguindo um ciclo de projeto de Ciência de Dados, desde o entendimento do negócio até o deploy do modelo em produção. 
+
+Para guiar a análise, foram levantadas hipóteses sobre os fatores que influenciam as vendas. São apresentados os 3 principais insights. O mapa mental abaixo seviu de guia para a elaboração das hipóteses.
+
+
 <p align="center">
-<img title="Metodologia CRIPS-DS" alt="Alt text" src="/images/crisp-dm.png" width="600">
+  <img src="images/mind_map.png" alt="Mapa Mental do Projeto"/>
 </p>
 
----
 
-## Tecnologias Utilizadas
+#### Hipótese 1: Lojas com competidores mais próximos vendem menos.
+> **FALSO.** A hipótese de que lojas com competidores mais distantes vendem mais é refutada pelos dados. Os gráficos mostram claramente o oposto: lojas com competidores mais próximos tendem a ter um volume de vendas total maior. A correlação negativa de -0.23, embora fraca, apoia essa conclusão, indicando que um aumento na distância está associado a uma leve diminuição nas vendas.
+<p align="center">
+  <img src="images/hipotese_05.png" alt="Gráfico da Hipótese 5"/>
+</p>
 
-Este projeto foi desenvolvido utilizando o ecossistema Python, com as seguintes bibliotecas e frameworks principais:
+#### Hipótese 8: Após o dia 10 de cada mês, as vendas tendem a aumentar.
+> **FALSO.** A hipótese de que as vendas aumentam após o dia 10 não é confirmada. O gráfico de média diária mostra que as vendas permanecem estáveis antes e depois do dia 10, sem aumento significativo. O total acumulado após o dia 10 é maior apenas porque há mais dias nesse intervalo, não porque as vendas diárias aumentam.
+<p align="center">
+  <img src="images/hipotese_17.png" alt="Gráfico da Hipótese 17"/>
+</p>
 
--   **Análise e Manipulação de Dados:** `pandas`, `numpy`
--   **Visualização de Dados:** `matplotlib`, `seaborn`
--   **Modelagem de Machine Learning:** `scikit-learn`, `xgboost`, `Boruta`
--   **API e Deploy:** `Flask`, `python-dotenv`
--   **Utilitários:** `inflection`, `requests`, `pickle`
-
----
-
-## Estrutura do Projeto
-
-O repositório está organizado da seguinte forma para garantir a modularidade e a clareza:
-
-```
-.
-├── api/                  # Contém o código da API Flask (handler.py) e a classe de pré-processamento (Rossmann.py).
-├── bot/                  # Contém o código do bot do Telegram e suas dependências.
-├── data/                 # Armazena os dados brutos, limpos e transformados.
-├── images/               # Imagens e diagramas utilizados na documentação.
-├── model/                # Modelos serializados (.pkl) e objetos de pré-processamento.
-├── notebooks/            # Jupyter Notebooks com todo o processo de desenvolvimento.
-├── README.md             # Este arquivo.
-└── requirements.txt      # Dependências Python para a API.
-```
-
----
-
-## Instalação e Como Executar
-
-Para executar este projeto localmente, siga os passos abaixo. Recomenda-se o uso de ambientes virtuais (`venv`) para isolar as dependências.
-
-### Pré-requisitos
-
--   Python 3.9 ou superior
-
-### Clonando o Repositório
-
-```bash
-git clone https://github.com/seu-usuario/rossmann-sales-forecast.git
-cd rossmann-sales-forecast
-```
-
-### Executando a API de Previsão
-
-A API é o núcleo do projeto, responsável por receber os dados, processá-los e retornar as previsões.
-
-1.  **Navegue até a pasta da API:**
-    ```bash
-    cd api
-    ```
-
-2.  **Crie e ative um ambiente virtual:**
-    ```bash
-    python -m venv venv
-    source venv/bin/activate  # No Linux/macOS
-    # venv\Scripts\activate   # No Windows
-    ```
-
-3.  **Instale as dependências:**
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-4.  **Inicie o servidor Flask:**
-    ```bash
-    python handler.py
-    ```
-    A API estará rodando em `http://127.0.0.1:5001`.
-
-### Executando o Bot do Telegram
-
-O bot serve como uma interface amigável para consultar as previsões da API.
-
-1.  **Abra um novo terminal e navegue até a pasta do bot:**
-    ```bash
-    cd bot
-    ```
-
-2.  **Crie e ative um ambiente virtual:**
-    ```bash
-    python -m venv venv
-    source venv/bin/activate  # No Linux/macOS
-    # venv\Scripts\activate   # No Windows
-    ```
-
-3.  **Instale as dependências do bot:**
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-4.  **Configure as Variáveis de Ambiente:**
-    Crie um arquivo chamado `.env` dentro da pasta `bot/` e adicione as seguintes variáveis:
-    ```bash
-    TELEGRAM_BOT_TOKEN="SEU_TOKEN_AQUI"
-    API_URL="http://127.0.0.1:5001/rossmann/predict"
-    ```
-    > **IMPORTANTE:** Adicione o arquivo `.env` ao seu `.gitignore` para não expor seu token.
-
-5.  **Inicie o bot:**
-    ```bash
-    python rossmann-bot.py
-    ```
-    O bot agora está online. Envie o ID de uma loja (ex: `/10`) para receber a previsão de vendas.
-
----
+#### Hipótese 9: Lojas vendem menos aos finais de semana.
+> **PARCIALMENTE VERDADEIRA.** O volume total de vendas cai significativamente nos finais de semana, especialmente no domingo. No entanto, a média de vendas por loja aberta no domingo é a mais alta da semana. Isso sugere que, embora menos lojas abram aos domingos, aquelas que o fazem conseguem vender mais, possivelmente devido à menor concorrência ou a um fluxo de clientes mais concentrado.
+<p align="center">
+  <img src="images/hipotese_18.png" alt="Gráfico da Hipótese 18"/>
+</p>
 
 
-## Deploy e Manutenção
 
-Os serviços da API e do Bot foram implantados na plataforma **Render**. Como o plano gratuito do Render suspende os serviços após 15 minutos de inatividade, foi configurado um workflow do **GitHub Actions** (`.github/workflows/keep-alive.yml`) para enviar requisições a cada 10 minutos, mantendo os serviços sempre ativos e responsivos.
 
----
+## 4. Desenvolvimento
 
-## Análise Exploratória - Principais Insights
-
-A análise exploratória de dados (EDA) foi fundamental para entender a dinâmica das vendas e validar hipóteses de negócio. Abaixo estão os principais insights obtidos:
-
-| Hipótese | Conclusão | Relevância | Insight Principal |
-| :--- | :--- | :--- | :--- |
-| **Competidores Próximos** | Inválida | Alta | Lojas com competidores mais próximos **vendem mais**, sugerindo que a concorrência se concentra em áreas de alta demanda. |
-| **Promoções Prolongadas** | Inválida | Alta | Promoções contínuas (`Promo2`) **não garantem vendas maiores**; o efeito promocional parece diminuir com o tempo. |
-| **Feriado de Natal** | Válida | Alta | Lojas que permanecem abertas durante o Natal apresentam uma **mediana de vendas significativamente maior**. |
-| **Férias Escolares** | Válida | Alta | As vendas são consistentemente **menores durante os períodos de férias escolares**. |
-| **Finais de Semana** | Parcialmente Válida | Média | O volume total de vendas cai nos finais de semana. No entanto, as poucas lojas que abrem aos domingos possuem uma **média de vendas elevada**. |
-
----
-
-## Preparação dos Dados e Engenharia de Atributos
+### 4.1. Engenharia e Seleção de Atributos
 
 O processo de preparação dos dados foi encapsulado na classe `Rossmann` e envolveu as seguintes etapas:
 
-1.  **Limpeza de Dados:** Tratamento de valores ausentes com estratégias específicas (ex: `CompetitionDistance` preenchido com um valor alto), padronização dos nomes das colunas para `snake_case` e conversão de tipos de dados.
+1.  **Limpeza de Dados:** Tratamento de valores ausentes, padronização dos nomes das colunas e conversão de tipos de dados.
 2.  **Engenharia de Atributos:** Extração de features a partir da data (`ano`, `mês`, `dia`, `semana_do_ano`) e criação de variáveis de negócio, como o tempo em meses desde a abertura de um concorrente (`CompetitionTimeMonth`) e o tempo em semanas desde o início de uma promoção (`PromoTimeWeek`).
 3.  **Transformação de Dados:**
-    -   **Rescalonamento:** Variáveis numéricas como `CompetitionDistance` e `Year` foram normalizadas para que o modelo não seja enviesado por diferentes escalas.
-    -   **Encoding:** Variáveis categóricas foram transformadas em representações numéricas (`One-Hot Encoding` para `StateHoliday`, `Label Encoding` para `StoreType` e `Ordinal Encoding` para `Assortment`).
+    -   **Rescalonamento:** Variáveis numéricas foram normalizadas para que o modelo não seja enviesado por diferentes escalas.
+    -   **Encoding:** Variáveis categóricas foram transformadas em representações numéricas.
     -   **Transformação Cíclica:** Features temporais como `DayOfWeek` e `Month` foram transformadas em componentes seno e cosseno para que o modelo entenda sua natureza cíclica.
+4.  **Seleção de Atributos:** O algoritmo **Boruta** foi utilizado para selecionar as features mais relevantes para o modelo, otimizando a performance e reduzindo a complexidade.
 
----
+### 4.2. Modelagem e Avaliação
 
-## Modelagem e Resultados
+Foram testados múltiplos algoritmos de regressão (Regressão Linear, Lasso, Random Forest, XGBoost). Os modelos não lineares apresentaram performance superior, e o **XGBoost Regressor** foi selecionado como o modelo final devido ao seu excelente equilíbrio entre performance e custo computacional.
 
-Foram testados múltiplos algoritmos de regressão (Regressão Linear, Lasso, Random Forest, XGBoost). Os modelos não lineares apresentaram performance superior, e o **XGBoost Regressor** foi selecionado como o modelo final devido ao seu excelente equilíbrio entre performance e custo computacional. A avaliação foi realizada utilizando **Validação Cruzada para Séries Temporais**, garantindo uma estimativa robusta do erro em dados não vistos.
+A avaliação foi realizada utilizando **Validação Cruzada para Séries Temporais**, garantindo uma estimativa robusta do erro em dados não vistos.
 
-Após a tunagem de hiperparâmetros, os resultados finais do modelo no conjunto de teste foram:
+## 5. Performance do Modelo
 
-| Métrica | Valor | Descrição |
-| :--- | :--- | :--- |
-| **MAE** (Mean Absolute Error) | 679.33 | Média do erro absoluto entre o previsto e o real. |
-| **MAPE** (Mean Absolute Percentage Error) | 9.92% | Média do erro percentual absoluto. |
-| **RMSE** (Root Mean Squared Error) | 995.73 | Raiz do erro quadrático médio, que penaliza mais os erros grandes. |
+A performance do modelo foi avaliada em diferentes estágios do projeto para garantir a melhor escolha e otimização.
 
----
+### 5.1. Performance dos Modelos (Sem Cross-Validation)
 
-## Análise de Negócio e Financeira
+> Nesta primeira avaliação, os modelos não lineares (Random Forest e XGBoost) já demonstram uma performance muito superior aos modelos lineares, indicando a complexidade do problema.
+
+| Model Name | MAE | MAPE | RMSE |
+| :--- | :--- | :--- | :--- |
+| Random Forest Regressor | 679.19 | 9.98% | 1010.31 |
+| XGBoost Regressor | 844.95 | 12.29% | 1246.30 |
+| Modelo de Média | 1354.80 | 20.64% | 1835.14 |
+| Regressão Linear | 1867.09 | 29.27% | 2671.05 |
+| Regressão Linear - Lasso | 1900.35 | 28.85% | 2768.02 |
+
+### 5.2. Performance dos Modelos (Com Cross-Validation)
+
+> A validação cruzada fornece uma estimativa mais realista da performance. O Random Forest se destaca, mas o XGBoost apresenta um ótimo resultado com um custo computacional significativamente menor, tornando-o a escolha para a próxima fase.
+
+| Model Name | MAE | MAPE | RMSE |
+| :--- | :--- | :--- | :--- |
+| Random Forest Regressor | 836.83 +/- 217.47 | 12% +/- 2% | 1254.60 +/- 316.67 |
+| XGBoost Regressor | 1038.0 +/- 165.93 | 14% +/- 1% | 1492.25 +/- 229.28 |
+| Regressão Linear | 2081.73 +/- 295.63 | 30% +/- 2% | 2952.52 +/- 468.37 |
+| Lasso | 2128.31 +/- 368.92 | 30% +/- 1% | 3067.48 +/- 549.40 |
+
+### 5.3. Performance do XGBoost (Após Fine-Tuning)
+
+> Após a otimização dos hiperparâmetros, a performance do XGBoost na validação cruzada melhorou consideravelmente, aproximando-se do resultado inicial do Random Forest.
+
+| Métrica | Valor |
+| :--- | :--- |
+| **MAE** | 857.01 +/- 143.21 |
+| **MAPE**| 12% +/- 1% |
+| **RMSE**| 1238.06 +/- 205.83 |
+
+### 5.4. Performance Final (Dados de Teste)
+
+> O modelo final, treinado com todos os dados de treino e validação, foi avaliado no conjunto de teste, que simula dados futuros. Os resultados demonstram um erro percentual médio de aproximadamente **10%**, um excelente resultado para o negócio.
+
+| Métrica | Valor |
+| :--- | :--- |
+| **MAE** (Mean Absolute Error) | 698.03 |
+| **MAPE** (Mean Absolute Percentage Error) | 10.28% |
+| **RMSE** (Root Mean Squared Error) | 1017.62 |
+<br/>
+<br/>
+
+#### 5.4.1 Gráfico de Performance do Modelo: Predição vs. Real
+<p align="center">
+  <img src="images/resutlado_modelo_performance.png" alt="Gráfico de Performance do Modelo" width="700"/>
+  <br>
+  <em>O gráfico acima mostra a relação entre a predição e o valor real, com a linha pontilhada representando a predição perfeita.</em>
+</p>
+<br/>
+<br/>
+
+#### 5.4.2 Distribuição do Erro Percentual Absoluto Médio (MAPE) por Loja
+<p align="center">
+  <img src="images/resutlado_modelo_mape_x_loja.png" alt="Gráfico de Erro por Loja" width="700"/>
+  <br>
+  <em>O erro (MAPE) por loja, mostrando que a maioria das previsões está abaixo de 20% de erro.</em>
+</p>
+
+## 5. Resultados para o Negócio
 
 O desempenho do modelo foi traduzido em impacto de negócio, fornecendo uma visão clara do seu valor financeiro.
 
--   **Previsão de Faturamento Total:** O modelo prevê um faturamento total de **R$ 283.76 milhões** para as próximas 6 semanas, considerando todas as lojas.
--   **Cenários de Risco:** Para auxiliar na tomada de decisão, foram calculados o melhor e o pior cenário, que estimam um faturamento entre **R$ 283.00 milhões** e **R$ 284.52 milhões**.
+### 5.1. Previsão de Faturamento Total
 
----
+O modelo prevê um faturamento total de **R$ 284.11 milhões** para as próximas 6 semanas. Para auxiliar na tomada de decisão, foram calculados cenários de risco.
 
-## Próximos Passos
+| Cenário | Valor |
+| :--- | :--- |
+| **Previsão Total** | **R$ 284,111,488.00** |
+| Pior Cenário | R$ 283,329,570.31 |
+| Melhor Cenário | R$ 284,893,384.85 |
 
--   **Engenharia de Features Avançada:** Explorar a criação de novas variáveis e interações entre elas para capturar padrões mais complexos.
--   **Monitoramento e Atualização Contínua:** Estabelecer rotinas de monitoramento do desempenho do modelo em produção e definir critérios para re-treinamento periódico.
--   **Documentação e Reprodutibilidade:** Manter a documentação de todas as etapas do pipeline atualizada para garantir a reprodutibilidade e facilitar futuras manutenções.
+### 5.2. Análise de Erros por Loja
+
+A análise dos erros por loja permite identificar onde o modelo é mais e menos preciso, possibilitando investigações futuras.
+
+**Top 5 Lojas com Menor Erro (MAPE)**
+
+| Store | Previsão (6 semanas) | MAE | MAPE |
+| :--- | :--- | :--- | :--- |
+| 1089 | R$ 375,506.19 | R$ 507.64 | 4.63% |
+| 259 | R$ 529,942.13 | R$ 634.55 | 4.77% |
+| 1097 | R$ 450,199.13 | R$ 545.12 | 4.94% |
+| 358 | R$ 356,857.63 | R$ 495.95 | 5.10% |
+| 990 | R$ 239,213.25 | R$ 328.79 | 5.40% |
+
+**Top 5 Lojas com Maior Erro (MAPE)**
+
+| Store | Previsão (6 semanas) | MAE | MAPE |
+| :--- | :--- | :--- | :--- |
+| 292 | R$ 108,321.38 | R$ 3,407.46 | 59.94% |
+| 909 | R$ 228,187.33 | R$ 7,777.18 | 51.99% |
+| 595 | R$ 355,734.47 | R$ 4,688.61 | 32.03% |
+| 876 | R$ 200,063.42 | R$ 4,000.01 | 31.02% |
+| 286 | R$ 162,590.33 | R$ 742.36 | 27.48% |
+
+## 6. Conclusão e Próximos Passos
+
+O projeto entregou com sucesso um sistema de previsão de vendas com um erro médio de **10.28%**, fornecendo uma ferramenta valiosa para o planejamento financeiro da Rossmann. O modelo é capaz de prever um faturamento de **R$ 284.11 milhões** para as próximas 6 semanas.
+
+O objetivo do projeto foi alcançado, dado que o produto de dados proposto foi gerado com sucesso. Agora o CFO e os gerentes podem utilizar a solução para tomar decisões estratégicas com mais assertividade.
+
+**Próximo Ciclo do CRISP-DM:**
+1. **Completar o Ano de 2015:**
+Identificar e coletar os meses faltantes de 2015 para garantir a integridade temporal dos dados, evitando viés na modelagem.
+
+2. **Engenharia de Features Avançada**
+Explorar a criação de novas variáveis, além de interações entre variáveis relevantes para capturar padrões complexos.
+
+3. **Tratamento de Lojas com Alto Erro Percentual (>25%)**
+Investigar causas de alto erro em lojas específicas, avaliando abordagens como segmentação de modelos, ajuste de hiperparâmetros, ou inclusão de variáveis contextuais (ex: localização, perfil de clientes).
+
+4. **Redução do Erro do Modelo**
+Testar algoritmos alternativos e tratamento de outliers.
+
+5. **Monitoramento e Atualização Contínua**
+Estabelecer rotinas de monitoramento do desempenho do modelo em produção e definir critérios para re-treinamento periódico com novos dados.
+
+6. **Documentação e Reprodutibilidade**
+Documentar todas as etapas do pipeline de dados e modelagem, garantindo reprodutibilidade e facilitando futuras manutenções.
+
+## 7. Tecnologias Utilizadas
+
+| Ferramenta | Descrição |
+| :--- | :--- |
+| **Python 3.9** | Linguagem principal do projeto. |
+| **Pandas, Numpy** | Manipulação e análise de dados. |
+| **Matplotlib, Seaborn** | Visualização de dados. |
+| **Scikit-learn, XGBoost, Boruta** | Modelagem e seleção de features. |
+| **Flask** | Desenvolvimento da API REST. |
+| **Render** | Plataforma de deploy para a API e o bot. |
+| **GitHub Actions** | Automação de CI/CD e manutenção dos serviços. |
+| **Jupyter Notebook** | Ambiente de desenvolvimento e prototipação. |
+
+## 8. Autor
+
+Desenvolvido por **Marcos Alessandro da Fonseca**
+
+[!LinkedIn](https://www.linkedin.com/in/alessandro-datascientist/)
