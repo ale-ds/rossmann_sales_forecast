@@ -165,7 +165,7 @@ O desempenho do modelo foi traduzido em impacto de negócio, fornecendo uma vis�
 
 ### 5.1. Previsão de Faturamento Total
 
-O modelo prevê um faturamento total de **R$ 284 milhões** para as próximas 6 semanas. Para auxiliar na tomada de decisão, foram calculados cenários de risco.
+O modelo prevê um faturamento total de **R$ 284.111.488,00** para as próximas 6 semanas. Para auxiliar na tomada de decisão, foram calculados cenários de risco.
 
 | Cenário | Valor |
 | :--- | :--- |
@@ -199,7 +199,7 @@ A análise dos erros por loja permite identificar onde o modelo é mais e menos 
 
 ## 6. Conclusão e Próximos Passos
 
-O projeto entregou com sucesso um sistema de previsão de vendas com um erro médio de **10.28%**, fornecendo uma ferramenta valiosa para o planejamento financeiro da Rossmann. O modelo é capaz de prever um faturamento de **R$ 284.11 milhões** para as próximas 6 semanas.
+O projeto entregou com sucesso um sistema de previsão de vendas com um erro médio de **10.28%**, fornecendo uma ferramenta valiosa para o planejamento financeiro da Rossmann. O modelo é capaz de prever um faturamento de **R$ 284.111.488,00** para as próximas 6 semanas.
 
 O objetivo do projeto foi alcançado, dado que o produto de dados proposto foi gerado com sucesso. Agora o CFO e os gerentes podem utilizar a solução para tomar decisões estratégicas com mais assertividade.
 
