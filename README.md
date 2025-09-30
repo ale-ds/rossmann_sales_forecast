@@ -165,7 +165,7 @@ O desempenho do modelo foi traduzido em impacto de negócio, fornecendo uma vis�
 
 ### 5.1. Previsão de Faturamento Total
 
-O modelo prevê um faturamento total de **R$ 284.11 milhões** para as próximas 6 semanas. Para auxiliar na tomada de decisão, foram calculados cenários de risco.
+O modelo prevê um faturamento total de **R$ 284 milhões** para as próximas 6 semanas. Para auxiliar na tomada de decisão, foram calculados cenários de risco.
 
 | Cenário | Valor |
 | :--- | :--- |
