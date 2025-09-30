@@ -127,20 +127,37 @@ A performance do modelo foi avaliada em diferentes estágios do projeto para gar
 <br/>
 
 #### 5.4.1 Gráfico de Performance do Modelo: Predição vs. Real
+
 <p align="center">
   <img src="images/resutlado_modelo_performance.png" alt="Gráfico de Performance do Modelo" width="700"/>
   <br>
-  <em>O gráfico acima mostra a relação entre a predição e o valor real, com a linha pontilhada representando a predição perfeita.</em>
+  <em>A imagem acima apresenta quatro gráficos essenciais para a avaliação do modelo:
+</em>
 </p>
 <br/>
 <br/>
+
+**1. Gráfico superior esquerdo (Séries temporais: Vendas vs Previsões)**
+As linhas azul (Vendas reais) e laranja (Previsões) acompanham de perto o comportamento da série, mostrando que o modelo consegue capturar bem a sazonalidade semanal com picos e quedas que se repetem regularmente; em alguns pontos de maior pico, como no início e meados de julho, o modelo subestima as vendas, mas mantém a tendência geral, enquanto a faixa de confiança apresenta certa variação, embora as previsões permaneçam próximas da realidade.
+
+**2. Gráfico superior direito (Taxa de Erro ao longo do tempo)**
+O eixo Y representa a razão entre previsto e observado (TaxaErro), em que valores próximos de 1 indicam bom acerto, acima de 1 superestimação e abaixo de 1 subestimação; o comportamento da taxa oscila em torno de 1, evidenciando ausência de viés sistemático, já que o modelo não erra sempre para cima ou para baixo, embora ocorram variações pontuais, como picos próximos de 1.15 e quedas para 0.8, mantendo a média geral estável.
+
+**3. Gráfico inferior esquerdo (Histograma dos erros)**
+O histograma mostra a distribuição dos erros (Vendas – Previsões), onde a maior parte está concentrada próxima de zero, sugerindo que o modelo acerta a maioria dos casos; ainda que ocorram alguns erros positivos e negativos mais extremos, eles são raros, reforçando que o modelo é consistente, mas com a presença de outliers que merecem atenção.
+
+**4. Gráfico inferior direito (Dispersão Erro vs Previsões)**
+O gráfico mostra como os erros se distribuem em função do valor previsto, revelando que para previsões baixas, até cerca de 5.000, os erros permanecem próximos de zero, mas à medida que os valores previstos aumentam acima de 10.000, a dispersão dos erros cresce significativamente, com casos extremos ultrapassando 30.000 de diferença, o que indica maior dificuldade do modelo em prever vendas muito altas e uma variabilidade crescente nessas situações.
+
 
 #### 5.4.2 Distribuição do Erro Percentual Absoluto Médio (MAPE) por Loja
 <p align="center">
   <img src="images/resutlado_modelo_mape_x_loja.png" alt="Gráfico de Erro por Loja" width="700"/>
   <br>
-  <em>O erro (MAPE) por loja, mostrando que a maioria das previsões está abaixo de 20% de erro.</em>
+  <em>O gráfico apresenta a métrica MAPE (Mean Absolute Percentage Error) para cada loja individual.</em>
 </p>
+O gráfico permitie avaliar o desempenho do modelo por unidade. A maior parte das lojas possui valores de MAPE concentrados entre 0.05 e 0.15, o que indica boa precisão nas previsões para a maioria dos casos. Apesar dessa consistência geral, observam-se algumas lojas com erros significativamente maiores, ultrapassando 0.3 e chegando a picos em torno de 0.6, configurando outliers que representam situações em que o modelo apresenta maior dificuldade em capturar corretamente o comportamento de vendas. Esses pontos destoantes sugerem que determinadas lojas possuem características atípicas ou padrões de vendas mais complexos, que exigiriam ajustes específicos no modelo ou a inclusão de variáveis adicionais para melhorar a acurácia nessas unidades.
+
 
 ## 5. Resultados para o Negócio
 
