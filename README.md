@@ -18,7 +18,7 @@ O projeto foi estruturado seguindo a metodologia **CRISP-DS**, dividida em 10 et
 1.  Compreender com clareza o modelo e o problema de negócios, usando estatísticas descritivas.
 2.  AnalisarTratar os dados (formatos, dados faltantes, outliers), realizando a limpeza necessária.
 3.  Junto com o time de negócios, identificar quais são as características que influenciam nas vendas. Formular e validar hipóteses para gerar insights.
-4.  Preparar os dados para criar o modelo de previsão de vendas, fazendo transformações, separando o dataframe em treino e teste, e automatizando a escolha das “features” mais importantes.
+4.  Preparar os dados para criar o modelo de previsão de vendas, fazendo transformações, separando o dataframe em treino, validação e teste, e automatizando a escolha das “features” mais importantes.
 5. Treinar algoritmos de Machine Learning (lineares e não lineares), comparar os resultados e escolher o que tiver melhor desempenho.
 6. Encontrar e ajustar os parâmetros do modelo para melhorar o aprendizado e reduzir o erro nas previsões.
 7. Interpretar o erro do modelo e traduzir isso em impacto financeiro para a empresa.
@@ -27,8 +27,6 @@ O projeto foi estruturado seguindo a metodologia **CRISP-DS**, dividida em 10 et
 10. Apresentar o bot do Telegram aos gerentes e ao CFO, explicando como o modelo funciona e tirando todas as dúvidas.
 
 ## 3. Hipóteses de Negócio
-
-A solução foi desenvolvida seguindo um ciclo de projeto de Ciência de Dados, desde o entendimento do negócio até o deploy do modelo em produção. 
 
 Para guiar a análise, foram levantadas hipóteses sobre os fatores que influenciam as vendas. São apresentados os 3 principais insights. O mapa mental abaixo seviu de guia para a elaboração das hipóteses.
 
